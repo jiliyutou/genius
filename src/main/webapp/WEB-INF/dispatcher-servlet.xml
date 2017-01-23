@@ -12,11 +12,54 @@
     http://www.springframework.org/schema/task
     http://www.springframework.org/schema/task/spring-task-3.0.xsd">
 
-	<mvc:annotation-driven />
-	<context:component-scan base-package="com.lightgreen.controller" />
+	<!-- 工程配置properties文件加载，默认classpath为src/main/resources，可设置绝对路径 -->
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:*.properties</value>
+			</list>
+		</property>
+	</bean>
 
-	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	<!-- 自动将控制器、component、service加载到bean，按需修改参数 -->
+	<context:component-scan base-package="com.lightgreen.common" />
+	<context:component-scan base-package="com.lightgreen.core" />
+
+	<!-- 引用外部xml资源，加载mybatis配置，按需修改参数 -->
+	<import resource="classpath:spring-mybatis.xml"></import>
+
+	<!-- 配置视图解析器 -->
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/jsp/" />
 		<property name="suffix" value=".jsp" />
 	</bean>
+
+	<!-- 启动SpringMVC注解驱动，默认使用Jaskson，调整使用fastjson类库作为反序列化工具 -->
+	<mvc:annotation-driven>
+		<mvc:message-converters register-defaults="true">
+			<bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>application/json;charset=UTF-8</value>
+						<value>text/html;charset=UTF-8</value>
+					</list>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+	<!-- 拦截器设置，按需修改 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<!-- /**表示根路径下的所有子路径 -->
+			<mvc:mapping path="/**" />
+			<bean class="com.lightgreen.interceptor.ContentTypeInterceptor" />
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<bean class="com.lightgreen.interceptor.XflushInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+
 </beans>

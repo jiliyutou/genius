@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lightgreen.core.dao.TaskDao">
+
+	<resultMap id="taskResultMap" type="com.lightgreen.core.entity.Task">
+		<id column="id" property="id" jdbcType="BIGINT" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="task_param" property="taskParam" jdbcType="VARCHAR" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="gmt_created" property="gmtCreated" jdbcType="TIMESTAMP" />
+		<result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Task_Column_List">
+		id,name,task_param,status,gmt_created,gmt_modified
+	</sql>
+
+	<select id="selectTaskById" resultMap="taskResultMap" parameterType="java.lang.Integer">
+		select
+		<include refid="Task_Column_List" />
+		from genius_task
+		where id = #{id,jdbcType=BIGINT}
+	</select>
+
+	<insert id="createTask" useGeneratedKeys="true" keyProperty="id" parameterType="com.lightgreen.core.entity.Task">
+		insert into genius_task(id,name,task_param,status,gmt_created,gmt_modified)
+		values
+		(#{id}, #{name}, #{taskParam}, #{status}, now(), now())
+	</insert>
+
+	 <update id="updateTask" parameterType="com.lightgreen.core.entity.Task">
+		update genius_task
+		<set>
+			<if test="taskParam != null">
+				task_param = #{taskParam,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				status = #{status,jdbcType=INTEGER},
+			</if>
+			gmt_modified = now()
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+
+</mapper>
